@@ -58,7 +58,7 @@ export function AuthDialog({
 
           {mode !== "reset" ? (
             <>
-              <Button variant="outline" size="lg" className="mt-6 w-full" onClick={() => submit}>
+              <Button variant="outline" size="lg" className="mt-6 w-full" onClick={(e) => void submit(e)}>
                 <span className="text-base font-bold">G</span> Continue with Google
               </Button>
               <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">

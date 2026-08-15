@@ -153,7 +153,7 @@ function AiPromptStudio() {
                   className="overflow-hidden rounded-xl border border-border bg-card shadow-soft"
                   style={{ animation: `fade-up 0.7s ${i * 0.12}s both` }}
                 >
-                  <DesignThumb variant={v} palette={["indigo", "teal", "violet", "amber"][i]} />
+                  <DesignThumb variant={v} palette={["indigo", "teal", "violet", "amber"][i] ?? "indigo"} />
                 </div>
               ))}
             </div>
@@ -228,7 +228,7 @@ function AiPromptStudio() {
                     <span className="block h-14">
                       <DesignThumb
                         variant={i % 2 === 0 ? "deck" : "report"}
-                        palette={["indigo", "violet", "teal", "amber"][i]}
+                        palette={["indigo", "violet", "teal", "amber"][i] ?? "indigo"}
                       />
                     </span>
                     <span className="block truncate px-2 py-1.5 text-[11px] font-medium text-muted-foreground">
