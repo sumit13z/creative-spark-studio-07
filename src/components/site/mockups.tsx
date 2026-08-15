@@ -57,7 +57,7 @@ export function DesignThumb({
   palette?: keyof typeof palettes | string;
   className?: string;
 }) {
-  const grad = palettes[palette] ?? palettes.indigo;
+  const grad = palettes[palette] ?? palettes["indigo"];
   return (
     <div
       className={cn("relative h-full w-full overflow-hidden bg-surface", className)}
