@@ -41,10 +41,10 @@ export function DesignStudio({
   initialTitle,
   className,
 }: {
-  initialDesign?: GeneratedDesign;
-  initialProjectId?: string;
-  initialTitle?: string;
-  className?: string;
+  initialDesign?: GeneratedDesign | undefined;
+  initialProjectId?: string | undefined;
+  initialTitle?: string | undefined;
+  className?: string | undefined;
 }) {
   const { open } = useAuthUi();
   const { user } = useAuth();

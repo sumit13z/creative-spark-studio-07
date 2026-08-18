@@ -18,7 +18,19 @@ export async function generateDesign(req: GenerateRequest): Promise<GenerateResu
   return { design, durationMs: Date.now() - started };
 }
 
-export type SaveArgs = Parameters<typeof saveProjectDraft>[0] extends { data: infer D } ? D : never;
+export type SaveArgs = {
+  projectId: string | null;
+  title: string;
+  prompt: string;
+  contentType: string;
+  tone: string | null;
+  audience: string | null;
+  palette: GeneratedDesign["palette"];
+  variantLabel: string;
+  design: GeneratedDesign;
+  model: string | null;
+  durationMs: number | null;
+};
 
 export async function saveDesign(args: SaveArgs) {
   return saveProjectDraft({ data: args });
