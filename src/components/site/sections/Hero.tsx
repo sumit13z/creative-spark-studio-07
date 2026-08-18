@@ -1,11 +1,10 @@
-import { useState } from "react";
-import { ArrowRight, Download, Pencil, RefreshCw, Sparkles, Wand2 } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "../Reveal";
-import { AppFrame, Avatars, DesignThumb } from "../mockups";
+import { Avatars } from "../mockups";
 import { useAuthUi } from "../AuthProvider";
-import { generateDesign, promptSuggestions, type GeneratedDesign } from "@/lib/ai-designer";
-import { cn } from "@/lib/utils";
+import { DesignStudio } from "../ai/DesignStudio";
+
 
 export function Hero() {
   const { open } = useAuthUi();
