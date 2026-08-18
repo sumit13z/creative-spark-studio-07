@@ -7,13 +7,11 @@ import { LogoMark } from "./Logo";
 import { brand } from "@/lib/brand";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 
 export type AuthMode = "signup" | "login" | "reset";
 
-/**
- * Auth UI shell. Handlers are isolated here so a real auth backend
- * (Lovable Cloud) can be wired into `submit` without touching the marketing site.
- */
 export function AuthDialog({
   open,
   mode,
@@ -35,16 +33,55 @@ export function AuthDialog({
     reset: "Reset your password",
   };
 
+  async function google() {
+    setBusy(true);
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) {
+      setBusy(false);
+      toast.error("Google sign-in failed", { description: result.error.message });
+      return;
+    }
+    if (result.redirected) return;
+    setBusy(false);
+    onOpenChange(false);
+    toast.success("Signed in");
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    await new Promise((r) => setTimeout(r, 700));
-    setBusy(false);
-    onOpenChange(false);
-    toast.success(
-      mode === "reset" ? "Reset link sent" : "Account ready",
-      { description: "Connect a backend to enable real accounts." },
-    );
+    try {
+      if (mode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: window.location.origin },
+        });
+        if (error) throw error;
+        onOpenChange(false);
+        toast.success("Account ready", { description: "You're signed in and ready to create." });
+      } else if (mode === "login") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        onOpenChange(false);
+        toast.success("Welcome back");
+      } else {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin,
+        });
+        if (error) throw error;
+        onOpenChange(false);
+        toast.success("Reset link sent", { description: `Check ${email}.` });
+      }
+    } catch (error) {
+      toast.error("That didn't work", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -58,7 +95,13 @@ export function AuthDialog({
 
           {mode !== "reset" ? (
             <>
-              <Button variant="outline" size="lg" className="mt-6 w-full" onClick={(e) => void submit(e)}>
+              <Button
+                variant="outline"
+                size="lg"
+                className="mt-6 w-full"
+                disabled={busy}
+                onClick={() => void google()}
+              >
                 <span className="text-base font-bold">G</span> Continue with Google
               </Button>
               <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">

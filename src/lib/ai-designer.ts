@@ -1,66 +1,39 @@
 /**
- * AI generation service abstraction.
+ * Client-side facade for the AI Designer.
  *
- * Today this returns deterministic mock drafts so the UI can be built and tested.
- * To connect a real model later, replace `generateDesign` with a call to a
- * server function (createServerFn) that proxies your AI provider — the UI only
- * depends on the types below.
+ * Components only ever call `generateDesign` / `saveDesign` from here, so the
+ * model, provider or even the whole generation backend can be swapped by
+ * changing the server functions this file delegates to.
  */
-export type DesignVariant = "deck" | "report" | "infographic" | "social" | "chart" | "video";
+import { generateDesignDraft } from "./ai-designer.functions";
+import { saveProjectDraft } from "./projects.functions";
+import { generateRequestSchema, type GenerateRequest, type GeneratedDesign } from "./design-schema";
 
-export type GenerateRequest = {
-  prompt: string;
-  tone?: string;
-  audience?: string;
-  palette?: string;
-};
+export type GenerateResult = { design: GeneratedDesign; durationMs: number };
 
-export type GeneratedSlide = { title: string; bullets: string[] };
-
-export type GeneratedDesign = {
-  id: string;
-  title: string;
-  variant: DesignVariant;
-  palette: string;
-  slides: GeneratedSlide[];
-  layouts: string[];
-};
-
-const guess = (prompt: string): { variant: DesignVariant; palette: string } => {
-  const p = prompt.toLowerCase();
-  if (p.includes("report") || p.includes("quarter")) return { variant: "report", palette: "teal" };
-  if (p.includes("infographic")) return { variant: "infographic", palette: "violet" };
-  if (p.includes("social") || p.includes("campaign")) return { variant: "social", palette: "amber" };
-  if (p.includes("chart") || p.includes("data")) return { variant: "chart", palette: "indigo" };
-  if (p.includes("video") || p.includes("reel")) return { variant: "video", palette: "violet" };
-  return { variant: "deck", palette: "indigo" };
-};
-
-const titleCase = (s: string) =>
-  s.trim().replace(/^./, (c) => c.toUpperCase()).slice(0, 64) || "Untitled draft";
-
-export async function generateDesign(req: GenerateRequest): Promise<GeneratedDesign> {
-  await new Promise((r) => setTimeout(r, 1500));
-  const { variant, palette } = guess(req.prompt);
-  const subject = titleCase(req.prompt.replace(/^create (a|an)?/i, ""));
-
-  return {
-    id: Math.random().toString(36).slice(2, 9),
-    title: subject,
-    variant,
-    palette: req.palette ?? palette,
-    layouts: ["Editorial", "Bold split", "Data-led", "Minimal"],
-    slides: [
-      { title: "The opportunity", bullets: ["Market context", "Why now", "Our position"] },
-      { title: "How it works", bullets: ["Three-step flow", "Proof points", "Outcomes"] },
-      { title: "Results", bullets: ["Growth chart", "Key metrics", "Next steps"] },
-    ],
-  };
+export async function generateDesign(req: GenerateRequest): Promise<GenerateResult> {
+  const data = generateRequestSchema.parse(req);
+  const started = Date.now();
+  const design = await generateDesignDraft({ data });
+  return { design, durationMs: Date.now() - started };
 }
 
-export const promptSuggestions = [
-  "Create a pitch deck for a climate analytics startup",
-  "Create a marketing report for Q3 performance",
-  "Create an infographic explaining our onboarding",
-  "Create a social media campaign for a product launch",
-];
+export type SaveArgs = {
+  projectId: string | null;
+  title: string;
+  prompt: string;
+  contentType: string;
+  tone: string | null;
+  audience: string | null;
+  palette: GeneratedDesign["palette"];
+  variantLabel: string;
+  design: GeneratedDesign;
+  model: string | null;
+  durationMs: number | null;
+};
+
+export async function saveDesign(args: SaveArgs) {
+  return saveProjectDraft({ data: args });
+}
+
+export * from "./design-schema";
