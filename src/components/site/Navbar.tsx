@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { ChevronDown, Menu, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -96,22 +99,43 @@ export function Navbar() {
           </nav>
 
           <div className="hidden items-center gap-2 lg:flex">
-            <Button variant="ghost" size="sm" onClick={() => openAuth("login")}>
-              Log in
-            </Button>
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/pricing">Contact Sales</Link>
-            </Button>
-            <Button variant="brand" size="sm" onClick={() => openAuth("signup")}>
-              <Sparkles /> Sign Up Free
-            </Button>
+            {user ? (
+              <>
+                <Button variant="ghost" size="sm" onClick={() => void signOut()}>
+                  Log out
+                </Button>
+                <Button variant="brand" size="sm" asChild>
+                  <Link to="/projects">
+                    <Sparkles /> My dashboard
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" onClick={() => openAuth("login")}>
+                  Log in
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/pricing">Contact Sales</Link>
+                </Button>
+                <Button variant="brand" size="sm" onClick={() => openAuth("signup")}>
+                  <Sparkles /> Sign Up Free
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile trigger */}
           <div className="flex items-center gap-2 justify-self-end lg:hidden">
-            <Button variant="brand" size="sm" onClick={() => openAuth("signup")}>
-              Sign Up Free
-            </Button>
+            {user ? (
+              <Button variant="brand" size="sm" asChild>
+                <Link to="/projects">Dashboard</Link>
+              </Button>
+            ) : (
+              <Button variant="brand" size="sm" onClick={() => openAuth("signup")}>
+                Sign Up Free
+              </Button>
+            )}
             <button
               type="button"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
