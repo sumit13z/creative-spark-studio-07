@@ -25,6 +25,16 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSection, setMobileSection] = useState<MenuKey | null>("create");
   const { open: openAuth } = useAuthUi();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  async function signOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/", replace: true });
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -264,26 +274,48 @@ export function Navbar() {
               Pricing
             </Link>
             <div className="grid gap-2 pt-2">
-              <Button
-                variant="brand"
-                size="lg"
-                onClick={() => {
-                  setMobileOpen(false);
-                  openAuth("signup");
-                }}
-              >
-                <Sparkles /> Start Creating Free
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => {
-                  setMobileOpen(false);
-                  openAuth("login");
-                }}
-              >
-                Log in
-              </Button>
+              {user ? (
+                <>
+                  <Button variant="brand" size="lg" asChild>
+                    <Link to="/projects" onClick={() => setMobileOpen(false)}>
+                      <Sparkles /> My dashboard
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      void signOut();
+                    }}
+                  >
+                    Log out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="brand"
+                    size="lg"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      openAuth("signup");
+                    }}
+                  >
+                    <Sparkles /> Start Creating Free
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      openAuth("login");
+                    }}
+                  >
+                    Log in
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
